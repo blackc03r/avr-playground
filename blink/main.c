@@ -1,6 +1,9 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+/* Make the builtin LED blink.
+ */
+
 #define BLINK_DELAY_MS 1000
 
 int main (void)
