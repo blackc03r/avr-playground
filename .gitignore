@@ -1,4 +1,3 @@
 *.o
 *.hex
-/blink/blink
-/ledtoggle/ledtoggle
+*.bin
