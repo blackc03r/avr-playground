@@ -8,7 +8,7 @@ LDFLAGS = -mmcu=atmega328p
 	$(CC) $(CFLAGS) -o $@ $<
 
 %.bin:
-	$(CC) $(LDFLAGS) $< -o $@
+	$(CC) $(LDFLAGS) $+ -o $@
 
 %.hex: %.bin
 	avr-objcopy -O ihex -R .eeprom $< $@
@@ -21,7 +21,7 @@ all: $(PROGNAME).hex
 	@echo Done!
 
 send: $(PROGNAME).hex
-	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(PROGNAME)
+	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(PROGNAME).hex
 
 clean:
 	rm *.o *.hex *.bin
