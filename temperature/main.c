@@ -7,8 +7,14 @@
  * - TMP36, powered by 5V, grounded, connected to A0.
  *
  * Every second, prints a number to the console. That number is related to the temperature of the
- * termometer. The TMP36 outputs 750mA at 25 degrees Celsius. Considering that our ADC range is
- * 0-1024, that gives us 4.88 mA per step.
+ * termometer. The TMP36 outputs 750mA at 25 degrees Celsius. To make our measurement more accurate,
+ * we use the 1.1V internal AREF rather than a 5V one. Considering that our ADC range is
+ * 0-1024, that gives us 1.07 mV per step. This also means that we don't support temperature over
+ * 60C.
+ *
+ * 5V or 1.1V are our only "easy" choices. For other references, we would have to wire some voltage
+ * to the AREF pin, and from what I've read, it also requires a capacitor to ensure regularity. I
+ * wouldn't know yet how to set this up...
  *
  * This code is the result of a *lot* of messing around, reading datasheets and tutorials. But
  * mostly messing around... But now it seems to work!
@@ -24,7 +30,7 @@
 
 /* MV == millivolt */
 /* Input voltage being fed to the TMP36 chip */
-#define TMP36_INPUT_VOLTAGE_MV 5000
+#define TMP36_INPUT_VOLTAGE_MV 1100
 /* Voltage that is supposed to be outputted by TMP36 at 25C */
 #define TMP36_VOLTAGE_AT_25D_MV 750
 /* TMP36's output is linearly related to temperature. Number of MV per degree. */
@@ -53,13 +59,9 @@ void uart_init(unsigned long int baud)
     UCSR0B|= (1<<TXEN0)|(1<<RXEN0);     // enable receiver and transmitter
     UCSR0C|= (1<<UCSZ00)|(1<<UCSZ01);   // 8bit data format
 
-    //// with static FILE variable:
-    // static FILE uart0fd;
-    // fdev_setup_stream((&uart0fd), uart_putchar, NULL,  _FDEV_SETUP_WRITE);
-    // stdout = &uart0fd;
-
-    //// or directly by using dynamically allocated FILE struct:
-    stdout = fdevopen(uart_putchar, NULL); // uses malloc/calloc, it might be inconvenient
+    static FILE uart0fd;
+    fdev_setup_stream((&uart0fd), uart_putchar, NULL,  _FDEV_SETUP_WRITE);
+    stdout = &uart0fd;
 }
 
 /* Returns the degrees represented by a ADC reading.
@@ -81,13 +83,10 @@ int main()
     int decidegrees;
 
     uart_init(9600);
-    /* DIDR0 = 0; // Disable digital input on all ADC ports                            */
-    /* PRR &= ~_BV(PRADC); // ADC turned on                                            */
-    /* ADMUX = 0x60; //AVcc, right adjusted, ADC0 pin                                  */
-    /* ADCSRA = 0xcF; //ADC Enabled, no auto trigger, Iterrupt enabled, 128 prescaller */
     ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-    ADMUX |= (1 << REFS0);
-    /* ADCSRB &= ~((1 << ADTS0) | (1 << ADTS1)| (1 << ADTS2)); */
+    /* REFS0 == 5V AREF, REFS1 | REFS0 == 1.1V. Both flags unset == use voltage on the AREF pin. */
+    /* We choose 1.1V. */
+    ADMUX |= ((1 << REFS0) | (1 << REFS1));
     ADCSRA |= (1 << ADEN);
 
     while (1) {
