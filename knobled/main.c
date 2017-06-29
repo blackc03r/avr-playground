@@ -2,7 +2,7 @@
 
 /* A LED with its intensity being controlled by a knob.
  *
- * - LED connected to PB3 (PWM)
+ * - LED connected to PB1 (PWM)
  * - Potentiometer (knob) connected to ADC0
  *
  * This program continuously reads samples from the potentiometer and adjusts the duty cycle of
