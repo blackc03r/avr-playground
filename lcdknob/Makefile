@@ -1,2 +1,2 @@
-PROGNAME = blink
+PROGNAME = lcdknob
 include ../common.mk
