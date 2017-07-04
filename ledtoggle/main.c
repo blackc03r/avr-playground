@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <stdbool.h>
+#include "../common/pin.h"
 
 /* Toggle LED with a button.
  *
@@ -9,16 +10,19 @@
  *
  * LED starts off and its state is toggled when we press the push button.
  */
-int main (void)
+
+#define PinLED PinB4
+#define PinButton PinD4
+
+int main()
 {
     bool button_was_pressed = false;
     bool led_is_on = false;
 
-    // PB4 is for powering the LED
-    DDRB |= _BV(DDB4);
+    pinoutputmode(PinLED);
 
     while (1) {
-        if (PIND & _BV(PIND4)) {
+        if (pinishigh(PinButton)) {
             if (!button_was_pressed) {
                 button_was_pressed = true;
                 led_is_on = !led_is_on;
@@ -27,9 +31,9 @@ int main (void)
             button_was_pressed = false;
         }
         if (led_is_on) {
-            PORTB |= _BV(PORTB4);
+            pinhigh(PinLED);
         } else {
-            PORTB &= ~_BV(PORTB4);
+            pinlow(PinLED);
         }
     }
 }

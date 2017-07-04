@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include "../common/pin.h"
 
 /* Make the builtin LED blink.
  */
@@ -8,16 +9,13 @@
 
 int main (void)
 {
- /* set pin 5 of PORTB for output*/
- DDRB |= _BV(DDB5);
+    /* PinB5 is the builtin LED */
+    pinoutputmode(PinB5);
 
- while(1) {
-  /* set pin 5 high to turn led on */
-  PORTB |= _BV(PORTB5);
-  _delay_ms(BLINK_DELAY_MS);
-
-  /* set pin 5 low to turn led off */
-  PORTB &= ~_BV(PORTB5);
-  _delay_ms(BLINK_DELAY_MS);
- }
+    while(1) {
+        pinhigh(PinB5); // turn on
+        _delay_ms(BLINK_DELAY_MS);
+        pinlow(PinB5); // turn off
+        _delay_ms(BLINK_DELAY_MS);
+    }
 }

@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include "../common/util.h"
 
 /* A LED with its intensity being controlled by a knob.
  *
@@ -9,13 +10,6 @@
  * PB1 accordingly, thus making the light brighter or dimmer depending on the knob's position.
  *
  */
-
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
 
 int sample_knob()
 {
