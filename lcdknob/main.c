@@ -71,6 +71,7 @@ void pulseEnable()
 void wait_for_bf()
 {
     // We don't use pulseEnable() because PinE has to be HIGH when we read the BF flag.
+    pinlow(PinRS);
     pinhigh(PinRW);
     pininputmode(PinDB7);
     pinhigh(PinE);
@@ -89,7 +90,7 @@ void wait_for_bf()
 void pulseEnableAndWaitBF()
 {
     pulseEnable();
-    wait_for_bf(false);
+    wait_for_bf();
 }
 
 void blink_forever(bool fast)
