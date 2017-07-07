@@ -29,7 +29,6 @@
 #define PinDB5 PinB2
 #define PinDB6 PinB3
 #define PinDB7 PinB4
-#define PinLED PinB5
 
 static unsigned char data_pins[8] = {
     PinDB0,
@@ -57,15 +56,6 @@ static void write8bit(unsigned char val)
 static void clearbytes()
 {
     write8bit(0);
-}
-
-static void debugLED(bool on)
-{
-    if (on) {
-        pinhigh(PinLED);
-    } else {
-        pinlow(PinLED);
-    }
 }
 
 static void pulseEnable()
@@ -145,7 +135,6 @@ static void knobroll_forever()
 
 int main()
 {
-    pinoutputmode(PinLED);
     pinoutputmode(PinRS);
     pinoutputmode(PinE);
     pinoutputmode(PinRW);
