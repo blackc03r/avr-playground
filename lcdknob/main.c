@@ -6,6 +6,16 @@
 #include "../common/pin.h"
 
 /* A LCD screen with its content being controlled by buttons and a knob.
+ *
+ * - A LCD screen with 11 pins connected to our board, sequentially.
+ *   We start with RS connected at D2 (pin 2) and we end with DB7
+ *   connected to B5 (pin 12).
+ *
+ * - A 10k potentiometer, on the 5V, connected to ADC0
+ *
+ * On startup, our LCD will display "Hello!" with its cursor next to the "!". Then comes the
+ * "knob-controlled" character. Its value is determined by the position of the potentiometer
+ * and will be changed in real time. Is that not super cool?
  */
 
 #define PinRS PinD2
@@ -32,7 +42,7 @@ static unsigned char data_pins[8] = {
     PinDB7,
 };
 
-void write8bit(unsigned char val)
+static void write8bit(unsigned char val)
 {
     char i;
     for (i=0; i<8; i++) {
@@ -44,12 +54,12 @@ void write8bit(unsigned char val)
     }
 }
 
-void clearbytes()
+static void clearbytes()
 {
     write8bit(0);
 }
 
-void debugLED(bool on)
+static void debugLED(bool on)
 {
     if (on) {
         pinhigh(PinLED);
@@ -58,7 +68,7 @@ void debugLED(bool on)
     }
 }
 
-void pulseEnable()
+static void pulseEnable()
 {
     pinlow(PinE);
     _delay_us(1);
@@ -68,7 +78,7 @@ void pulseEnable()
 }
 
 // Returns whether the BF flag was ON at least for one cycle
-void wait_for_bf()
+static void wait_for_bf()
 {
     // We don't use pulseEnable() because PinE has to be HIGH when we read the BF flag.
     pinlow(PinRS);
@@ -87,34 +97,50 @@ void wait_for_bf()
     pinlow(PinRW);
 }
 
-void pulseEnableAndWaitBF()
+static void pulseEnableAndWaitBF()
 {
     pulseEnable();
     wait_for_bf();
 }
 
-void blink_forever(bool fast)
-{
-    while(1) {
-        debugLED(true);
-        if (fast) { _delay_ms(100); } else { _delay_ms(1000); }
-        debugLED(false);
-        if (fast) { _delay_ms(100); } else { _delay_ms(1000); }
-    }
-}
-
-void sendcmd(unsigned char cmd)
+static void sendcmd(unsigned char cmd)
 {
     pinlow(PinRS);
     write8bit(cmd);
     pulseEnableAndWaitBF();
 }
 
-void sendchar(unsigned char c)
+static void sendchar(unsigned char c)
 {
     pinhigh(PinRS);
     write8bit(c);
     pulseEnableAndWaitBF();
+}
+
+static unsigned char sample_knob()
+{
+    cbi(PRR, PRADC);
+    sbi(ADCSRA, ADSC);
+    while (bit_is_set(ADCSRA, ADSC));
+    return ADCH;
+}
+
+/* Read knob on ADC0 and changes the last letter on our LCD accordingly.
+ */
+static void knobroll_forever()
+{
+    unsigned char lastval = 0;
+    unsigned char val;
+
+    while (1) {
+        val = sample_knob();
+        if (val != lastval) {
+            lastval = val;
+            sendchar(val);
+            // make cursor go back
+            sendcmd(0b00010000);
+        }
+    }
 }
 
 int main()
@@ -153,7 +179,7 @@ int main()
     sendcmd(0b00000110);
 
     // Display mode
-    sendcmd(0b00001111);
+    sendcmd(0b00001110);
 
     // write text
     sendchar('H');
@@ -163,22 +189,13 @@ int main()
     sendchar('o');
     sendchar('!');
 
-    // All pins low
-    clearbytes();
-    pinlow(PinRS);
+    // Setup ADC0 (knob)
+    sbi(ADCSRA, ADPS0);
+    sbi(ADCSRA, ADPS1);
+    sbi(ADCSRA, ADPS2);
+    sbi(ADMUX, REFS0); // 5V AREF
+    sbi(ADMUX, ADLAR); // 8-bit mode
+    sbi(ADCSRA, ADEN); // Go!
 
-    blink_forever(true);
-
-    // Return home
-    /* DB1_HIGH;      */
-    /* pulseEnable(); */
-    /* clearbytes();  */
-
-    // Set character
-    /* RS_HIGH;       */
-    /* DB6_HIGH;      */
-    /* DB3_HIGH;      */
-    /* pulseEnable(); */
-    /* clearbytes();  */
-    /* RS_LOW;        */
+    knobroll_forever();
 }
