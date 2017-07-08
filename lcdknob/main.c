@@ -48,7 +48,7 @@ static unsigned char data_pins[8] = {
 
 static void write8bit(unsigned char val)
 {
-    char i;
+    unsigned char i;
     for (i=0; i<8; i++) {
         if (val & (1 << i)) {
             pinhigh(data_pins[i]);
