@@ -1,5 +1,5 @@
 CC = avr-gcc
-CFLAGS = -Os -DF_CPU=16000000UL -mmcu=atmega328p -c
+CFLAGS = -Os -Wall -DF_CPU=16000000UL -mmcu=atmega328p -c
 LDFLAGS = -mmcu=atmega328p
 OBJS ?= main.o
 

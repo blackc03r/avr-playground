@@ -31,6 +31,15 @@ void pinlow(Pin pin)
     }
 }
 
+void pinset(Pin pin, bool high)
+{
+    if (high) {
+        pinhigh(pin);
+    } else {
+        pinlow(pin);
+    }
+}
+
 bool pinishigh(Pin pin)
 {
     unsigned char portval = 0;

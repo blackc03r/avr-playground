@@ -32,6 +32,7 @@ typedef enum {
 
 void pinhigh(Pin pin);
 void pinlow(Pin pin);
+void pinset(Pin pin, bool high);
 bool pinishigh(Pin pin);
 void pininputmode(Pin pin);
 void pinoutputmode(Pin pin);
