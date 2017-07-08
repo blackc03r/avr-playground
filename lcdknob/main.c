@@ -30,6 +30,11 @@
 #define PinDB6 PinB3
 #define PinDB7 PinB4
 
+/* The number of "same value" we need to have on ADC0 to consider it stable.
+ * This is to prevent flickering when the knob is exactly at the edge of a value.
+ */
+#define ANTI_FLICKER_THRESHOLD 10
+
 static unsigned char data_pins[8] = {
     PinDB0,
     PinDB1,
@@ -115,20 +120,39 @@ static unsigned char sample_knob()
     return ADCH;
 }
 
+void set_rolling_char(unsigned char val) {
+    sendchar(val);
+    // make cursor go back
+    sendcmd(0b00010000);
+}
+
 /* Read knob on ADC0 and changes the last letter on our LCD accordingly.
  */
 static void knobroll_forever()
 {
-    unsigned char lastval = 0;
-    unsigned char val;
+    unsigned char currentval = 0;
+    unsigned char candidateval = 0;
+    unsigned char sameval_counter = 0;
+    unsigned char sample;
+
+    sample = sample_knob();
+    set_rolling_char(sample);
+    currentval = sample;
 
     while (1) {
-        val = sample_knob();
-        if (val != lastval) {
-            lastval = val;
-            sendchar(val);
-            // make cursor go back
-            sendcmd(0b00010000);
+        sample = sample_knob();
+        if (sample == currentval) {
+            sameval_counter = 0;
+        } else if (sample == candidateval) {
+            sameval_counter++;
+            if (sameval_counter == ANTI_FLICKER_THRESHOLD) {
+                currentval = sample;
+                sameval_counter = 0;
+                set_rolling_char(sample);
+            }
+        } else {
+            candidateval = sample;
+            sameval_counter = 0;
         }
     }
 }
