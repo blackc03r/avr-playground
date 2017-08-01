@@ -1,7 +1,18 @@
+ifdef NANO
+	MCU = atmega168
+	USBDEV = /dev/ttyUSB0
+	BAUDS = 57600
+endif
+
+MCU ?= atmega328p
+F_CPU ?=16000000UL
 CC = avr-gcc
-CFLAGS = -Os -Wall -DF_CPU=16000000UL -mmcu=atmega328p -c
-LDFLAGS = -mmcu=atmega328p
+CFLAGS = -Os -Wall -DF_CPU=$(F_CPU) -mmcu=$(MCU) -c
+LDFLAGS = -mmcu=$(MCU)
 OBJS ?= main.o
+
+USBDEV ?= /dev/ttyACM0
+BAUDS ?= 115200
 
 # Patterns
 
@@ -16,7 +27,7 @@ all: $(PROGNAME).hex
 	@echo Done!
 
 send: $(PROGNAME).hex
-	avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:$(PROGNAME).hex
+	avrdude -F -V -c arduino -p $(MCU) -P $(USBDEV) -b $(BAUDS) -U flash:w:$(PROGNAME).hex
 
 clean:
 	rm -f $(OBJS) $(PROGNAME).hex $(PROGNAME).bin
