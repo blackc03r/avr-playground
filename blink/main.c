@@ -6,16 +6,17 @@
  */
 
 #define BLINK_DELAY_MS 1000
+#define PIN PinB5
 
 int main (void)
 {
     /* PinB5 is the builtin LED */
-    pinoutputmode(PinB5);
+    pinoutputmode(PIN);
 
     while(1) {
-        pinhigh(PinB5); // turn on
+        pinhigh(PIN); // turn on
         _delay_ms(BLINK_DELAY_MS);
-        pinlow(PinB5); // turn off
+        pinlow(PIN); // turn off
         _delay_ms(BLINK_DELAY_MS);
     }
 }

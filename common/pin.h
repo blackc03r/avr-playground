@@ -12,6 +12,7 @@ typedef enum {
     PinB5 = 0b01101,
     PinB6 = 0b01110,
     PinB7 = 0b01111,
+#ifdef PORTC
     PinC0 = 0b10000,
     PinC1 = 0b10001,
     PinC2 = 0b10010,
@@ -20,6 +21,8 @@ typedef enum {
     PinC5 = 0b10101,
     PinC6 = 0b10110,
     PinC7 = 0b10111,
+#endif
+#ifdef PORTD
     PinD0 = 0b11000,
     PinD1 = 0b11001,
     PinD2 = 0b11010,
@@ -28,6 +31,7 @@ typedef enum {
     PinD5 = 0b11101,
     PinD6 = 0b11110,
     PinD7 = 0b11111,
+#endif
 } Pin;
 
 void pinhigh(Pin pin);
